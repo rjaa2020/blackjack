@@ -11,7 +11,7 @@ def slice_label(percent, all_vals):
     Create a pie chart slice label of the form `x% (absolute count)` (e.g. --> 45.3% (153) ).
     Note that this function was ripped from the matplotlib documentation on the subject.
     """
-    absolute = int(percent/100.0*sum(all_vals))
+    absolute = int(percent / 100.0 * sum(all_vals))
     return "{:.1f}%\n({:d})".format(percent, absolute)
 
 
@@ -23,7 +23,8 @@ class MultiGameAnalyzer:
         self.initial_bankroll = metric_trackers[0].bankroll_progression[0]
 
         (self.wins, self.losses, self.pushes, self.insurance_wins, self.insurance_losses,
-         self.gambler_blackjacks, self.dealer_blackjacks, self.final_bankrolls) = self._aggregate_metrics(metric_trackers)
+         self.gambler_blackjacks, self.dealer_blackjacks, self.final_bankrolls) = self._aggregate_metrics(
+            metric_trackers)
 
     @staticmethod
     def _aggregate_metrics(metric_trackers):
@@ -55,7 +56,8 @@ class MultiGameAnalyzer:
     def print_summary(self):
         """Print a simple summary of analyzed results."""
         # --- Hand Outcomes ---
-        total_hands = sum([self.wins, self.losses, self.pushes, self.insurance_wins])  # Note that insurance losses are not a final outcome of a hand!
+        total_hands = sum([self.wins, self.losses, self.pushes,
+                           self.insurance_wins])  # Note that insurance losses are not a final outcome of a hand!
         hand_win_pct = zero_division_pct(self.wins, total_hands)
         hand_loss_pct = zero_division_pct(self.losses, total_hands)
         hand_push_pct = zero_division_pct(self.pushes, total_hands)
@@ -108,12 +110,18 @@ class MultiGameAnalyzer:
             Min Bankroll: {money_format(min(self.final_bankrolls))}
             Avg Bankroll: {money_format(mean(self.final_bankrolls))}
             """)
-        )
+              )
 
     def create_plots(self):
         """Create charts summarizing the tracked metric data."""
         # Create a figure to hold the plots (called "axes")
-        fig, (ax1, ax2) = plt.subplots(2, 1)  # 2 rows 1 column of axes (i.e. stacked plots)
+        fig, (ax3, ax1, ax2) = plt.subplots(3, 1)  # 3 rows 1 column of axes (i.e. stacked plots)
+
+        # Axes 3: Show bankroll over time
+        ax3.plot(self.final_bankrolls)
+        ax3.set_xlabel("Game Count")
+        ax3.set_ylabel("Value")
+        ax3.grid(which='both')
 
         # Axes 1: Final Bankroll Distribution (Histogram)
         ax1.hist(self.final_bankrolls)
@@ -125,13 +133,16 @@ class MultiGameAnalyzer:
         data = []
         labels = []
         for metric, label in [
-            (self.wins, 'Wins'), (self.losses, 'Losses'), (self.pushes, 'Pushes'), (self.insurance_wins, 'Insurance Wins')
+            (self.wins, 'Wins'),
+            (self.losses, 'Losses'),
+            (self.pushes, 'Pushes'),
+            (self.insurance_wins, 'Insurance Wins')
         ]:
             if metric > 0:
                 data.append(metric)
                 labels.append(label)
 
-        wedges, _, _ = ax2.pie(data, autopct=lambda pct: slice_label(pct, data), textprops=dict(color="w")) 
+        wedges, _, _ = ax2.pie(data, autopct=lambda pct: slice_label(pct, data), textprops=dict(color="w"))
         ax2.legend(wedges, labels, title="Outcomes")
         ax2.set_title('Hand Outcomes')
         ax2.axis('equal')
